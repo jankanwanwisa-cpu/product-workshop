@@ -8,7 +8,7 @@ const { authorize } = require("../middleware/token.middleware");
 
 router.get("/", authorize, async function (req, res, next) {
   try {
-    let orders = await orderSchema.find({ user_id: req.user.id, isDeleted: false }).populate("product_id", "name price");
+    let orders = await orderSchema.find({ isDeleted: false });
     return sendResponse(res, 200, "สำเร็จ", orders);
   } catch (error) {
     return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);

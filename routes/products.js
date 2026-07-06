@@ -5,7 +5,7 @@ const orderSchema = require("../models/order.model");
 const { sendResponse } = require("../utils/response");
 const { authorize, checkRole } = require("../middleware/token.middleware");
 
-router.get("/", async function (req, res, next) {
+router.get("/", authorize, async function (req, res, next) {
   try {
     let products = await productSchema.find({ isDeleted: false });
     return sendResponse(res, 200, "สำเร็จ", products);
@@ -122,7 +122,10 @@ router.post("/:id/orders", authorize, async function (req, res, next) {
     );
 
     if (!product) {
-      let productExists = await productSchema.findOne({ _id: id, isDeleted: false });
+      let productExists = await productSchema.findOne({
+        _id: id,
+        isDeleted: false,
+      });
       if (!productExists) {
         return sendResponse(res, 400, "ไม่พบสินค้า", null);
       }
