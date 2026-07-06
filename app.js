@@ -1,9 +1,9 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+const { sendResponse } = require('./utils/response');
 
 require('dotenv').config();
 require('./db.js');
@@ -31,28 +31,16 @@ app.use('/api/v1', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  res.status(404).json({
-    status: 404,
-    message: "Not Found: ไม่พบเส้นทางที่เรียกใช้งาน",
-    data: null
-  });
+  return sendResponse(res, 404, 'Not found');
 });
-global.sendResponse = (res, statusCode, message, data = null) => {
-  return res.status(statusCode).json({
-    status: statusCode,
-    message: message,
-    data: data
-  });
-};
 // error handler
 app.use(function(err, req, res, next) {
-  console.error("Server Error:", err.stack);
-  
-  const statusCode = err.status || 500;
-  const errorMessage = req.app.get('env') === 'development' ? err.message : "Internal Server Error";
-  
-  // เรียกใช้ sendResponse ที่เราทำขึ้นมาส่งกลับหน้าบ้านสวยๆ
-  sendResponse(res, statusCode, errorMessage, []);
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // send API error response
+  return sendResponse(res, 500, err.message || 'error');
 });
 
 module.exports = app;
