@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const tokenMiddleware = require("../middleware/token.middleware");
+const { authorize , checkRole} = require("../middleware/token.middleware");
 const userSchema = require("../models/user.model");
 const { sendResponse } = require("../utils/response");
 
@@ -95,8 +95,8 @@ router.post("/login", async function (req, res, next) {
 
 router.put(
   "/:id/approve",
-  tokenMiddleware.authorize,
-  tokenMiddleware.checkRole(["admin"]),
+  authorize,
+  checkRole(["admin"]),
   async function (req, res, next) {
   try {
     let { id } = req.params;

@@ -9,7 +9,10 @@ const authorize = async (req, res, next) => {
     }
 
     let token = authHeader.split(" ")[1];
-    let decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    let secretKey = process.env.JWT_SECRET;
+    let decoded = jwt.verify(token, secretKey, {
+      algorithms: ["HS256"],
+    });
     req.user = decoded;
     next();
   } catch (error) {
