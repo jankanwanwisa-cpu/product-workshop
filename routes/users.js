@@ -15,6 +15,11 @@ const isBadRequestError = (error) => {
 };
 
 const registerRoles = ["user", "merchant"];
+const getApprovalMessage = (user) => {
+  return user.role === "merchant" && !user.is_approved
+    ? "waiting approve"
+    : "success";
+};
 
 /* GET users listing. */
 router.get("/users", async function (req, res, next) {
@@ -45,7 +50,7 @@ router.post("/register", async function (req, res, next) {
       is_approved: registerRole === "user",
     });
     await user.save();
-    return sendResponse(res, 201, "success", user);
+    return sendResponse(res, 201, getApprovalMessage(user), user);
   } catch (error) {
     let status = isBadRequestError(error) ? 400 : 500;
     return sendResponse(res, status, error.message || "error", null);
@@ -74,7 +79,7 @@ router.post("/login", async function (req, res, next) {
       { expiresIn: "1h" }
     );
 
-    return sendResponse(res, 200, "success", {
+    return sendResponse(res, 200, getApprovalMessage(user), {
       user : {
         id: user._id,
         username: user.username,
