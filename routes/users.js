@@ -17,17 +17,17 @@ const isBadRequestError = (error) => {
 const registerRoles = ["user", "merchant"];
 const getApprovalMessage = (user) => {
   return user.role === "merchant" && !user.is_approved
-    ? "waiting approve"
-    : "success";
+    ? "รออนุมัติ"
+    : "สำเร็จ";
 };
 
 /* GET users listing. */
 router.get("/users", async function (req, res, next) {
   try {
     let users = await userSchema.find({});
-    return sendResponse(res, 200, "success", users);
+    return sendResponse(res, 200, "สำเร็จ", users);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "error", []);
+    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
@@ -35,12 +35,12 @@ router.post("/register", async function (req, res, next) {
   try {
     let { username, password, role } = req.body;
     if (!username || !password) {
-      return sendResponse(res, 400, "username and password are required", null);
+      return sendResponse(res, 400, "ชื่อผู้ใช้และรหัสผ่านจำเป็นต้องระบุ", null);
     }
 
     let registerRole = role || "user";
     if (!registerRoles.includes(registerRole)) {
-      return sendResponse(res, 400, "role must be user or merchant", null);
+      return sendResponse(res, 400, "role ต้องเป็น user หรือ merchant", null);
     }
 
     let user = new userSchema({
@@ -53,7 +53,7 @@ router.post("/register", async function (req, res, next) {
     return sendResponse(res, 201, getApprovalMessage(user), user);
   } catch (error) {
     let status = isBadRequestError(error) ? 400 : 500;
-    return sendResponse(res, status, error.message || "error", null);
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
@@ -61,16 +61,16 @@ router.post("/login", async function (req, res, next) {
   try {
     let { username, password } = req.body;
     if (!username || !password) {
-      return sendResponse(res, 400, "username and password are required", null);
+      return sendResponse(res, 400, "ชื่อผู้ใช้และรหัสผ่านจำเป็นต้องระบุ", null);
     }
 
     let user = await userSchema.findOne({ username });
     if (!user) {
-      return sendResponse(res, 400, "User not found", null);
+      return sendResponse(res, 400, "ไม่พบผู้ใช้", null);
     }
     let isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return sendResponse(res, 401, "Invalid password or username", null);
+      return sendResponse(res, 401, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", null);
     }
 
     let token = jwt.sign(
@@ -89,7 +89,7 @@ router.post("/login", async function (req, res, next) {
       token,
     });
   } catch (error) {
-    return sendResponse(res, 500, error.message || "error", null);
+    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
@@ -106,12 +106,12 @@ router.put(
         { new: true },
       );
       if (!user) {
-        return sendResponse(res, 400, "User not found", null);
+        return sendResponse(res, 400, "ไม่พบผู้ใช้", null);
       }
-      return sendResponse(res, 200, "success", user);
+      return sendResponse(res, 200, "สำเร็จ", user);
     } catch (error) {
       let status = isBadRequestError(error) ? 400 : 500;
-      return sendResponse(res, status, error.message || "error", null);
+      return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
     }
   },
 );
@@ -121,12 +121,12 @@ router.delete("/:id", async function (req, res, next) {
     let { id } = req.params;
     let user = await userSchema.findByIdAndDelete(id);
     if (!user) {
-      return sendResponse(res, 400, "User not found", null);
+      return sendResponse(res, 400, "ไม่พบผู้ใช้", null);
     }
-    return sendResponse(res, 200, "success", user);
+    return sendResponse(res, 200, "สำเร็จ", user);
   } catch (error) {
     let status = isBadRequestError(error) ? 400 : 500;
-    return sendResponse(res, status, error.message || "error", null);
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 module.exports = router;

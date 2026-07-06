@@ -11,6 +11,7 @@ require('./db.js');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var productsRouter = require('./routes/products');
+var ordersRouter = require('./routes/order');
 
 
 var app = express();
@@ -29,10 +30,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/api/v1', usersRouter);
 app.use('/api/v1/products', productsRouter);
+app.use('/api/v1/orders', ordersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  return sendResponse(res, 404, 'Not found');
+  return sendResponse(res, 404, 'ไม่พบเส้นทาง', null);
 });
 // error handler
 app.use(function(err, req, res, next) {
@@ -41,7 +43,7 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // send API error response
-  return sendResponse(res, 500, err.message || 'error');
+  return sendResponse(res, 500, err.message || 'ไม่ทราบสาเหตุ', null);
 });
 
 module.exports = app;
