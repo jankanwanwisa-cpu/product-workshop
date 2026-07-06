@@ -7,12 +7,12 @@ const productSchema = new mongoose.Schema(
     merchant_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",
-      required: true,
+      required: true
     },
-    isDeleted: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false }
   },
   {
-    timestamps: true,
-  },
-);
+    timestamps: true
+  });
+
 module.exports = mongoose.model("products", productSchema);

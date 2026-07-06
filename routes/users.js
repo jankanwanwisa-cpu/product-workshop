@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { authorize , checkRole} = require("../middleware/token.middleware");
+const { authorize, checkRole } = require("../middleware/token.middleware");
 const userSchema = require("../models/user.model");
 const { sendResponse } = require("../utils/response");
 
@@ -44,8 +44,8 @@ router.post("/register", async function (req, res, next) {
     }
 
     let user = new userSchema({
-      username : username,
-      password : await bcrypt.hash(password, 10),
+      username: username,
+      password: await bcrypt.hash(password, 10),
       role: registerRole,
       is_approved: registerRole === "user",
     });
@@ -76,11 +76,11 @@ router.post("/login", async function (req, res, next) {
     let token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     return sendResponse(res, 200, getApprovalMessage(user), {
-      user : {
+      user: {
         id: user._id,
         username: user.username,
         role: user.role,
@@ -98,22 +98,23 @@ router.put(
   authorize,
   checkRole(["admin"]),
   async function (req, res, next) {
-  try {
-    let { id } = req.params;
-    let user = await userSchema.findByIdAndUpdate(
-      id,
-      { is_approved: true },
-      { new: true },
-    );
-    if (!user) {
-      return sendResponse(res, 400, "User not found", null);
+    try {
+      let { id } = req.params;
+      let user = await userSchema.findByIdAndUpdate(
+        id,
+        { is_approved: true },
+        { new: true },
+      );
+      if (!user) {
+        return sendResponse(res, 400, "User not found", null);
+      }
+      return sendResponse(res, 200, "success", user);
+    } catch (error) {
+      let status = isBadRequestError(error) ? 400 : 500;
+      return sendResponse(res, status, error.message || "error", null);
     }
-    return sendResponse(res, 200, "success", user);
-  } catch (error) {
-    let status = isBadRequestError(error) ? 400 : 500;
-    return sendResponse(res, status, error.message || "error", null);
-  }
-});
+  },
+);
 
 router.delete("/:id", async function (req, res, next) {
   try {

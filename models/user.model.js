@@ -7,12 +7,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "merchant", "admin"],
       required: true,
-      default: "user",
+      default: "user"
     },
-    is_approved: { type: Boolean, default: false },
+    is_approved: { type: Boolean, default: false }
   },
   {
-    timestamps: true,
-  },
-);
+    timestamps: true
+  });
+  
 module.exports = mongoose.model("users", userSchema);
