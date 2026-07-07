@@ -21,8 +21,13 @@ router.post(
   async function (req, res, next) {
     try {
       let { name, price, stock } = req.body;
-      if (!name || !price) {
-        return sendResponse(res, 400, "ชื่อสินค้าและราคาจำเป็นต้องระบุ", null);
+      if (!name || !price || !stock) {
+        return sendResponse(
+          res,
+          400,
+          "ชื่อสินค้า ราคา และจำนวนสต็อกจำเป็นต้องระบุ",
+          null,
+        );
       }
       let product = new productSchema({
         name,
@@ -46,10 +51,12 @@ router.put(
     try {
       let { id } = req.params;
       let { name, price, stock } = req.body;
-      let product = await productSchema
-        .findByIdAndUpdate(id, { name, price, stock }, { new: true })
-        .populate("merchant_id", "username");
-      if (!product) {
+      let product = await productSchema.findByIdAndUpdate(
+        id,
+        { name, price, stock },
+        { new: true },
+      );
+      if (!product || product.isDeleted) {
         return sendResponse(res, 400, "ไม่พบสินค้า", null);
       }
       return sendResponse(res, 200, "สำเร็จ", product);
