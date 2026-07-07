@@ -1,9 +1,17 @@
-const sendResponse = (res, status, message, data = null) => {
-  return res.status(status).send({
+const sendResponse = async (res, status, message, data = null) => {
+  return  await res.status(status).send({
     status,
     message,
     data,
   });
 };
 
-module.exports = { sendResponse };
+const isBadRequestError = (error) => {
+  return (
+    error?.name === "ValidationError" ||
+    error?.name === "CastError" ||
+    error?.code === 11000
+  );
+};
+
+module.exports = { sendResponse, isBadRequestError };

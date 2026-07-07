@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 const productSchema = require("../models/product.model");
 const orderSchema = require("../models/order.model");
-const { sendResponse } = require("../utils/response");
+const { sendResponse, isBadRequestError } = require("../utils/response");
 const { authorize, checkRole } = require("../middleware/token.middleware");
 
 router.get("/", authorize, async function (req, res, next) {
@@ -10,7 +10,8 @@ router.get("/", authorize, async function (req, res, next) {
     let products = await productSchema.find({ isDeleted: false });
     return sendResponse(res, 200, "สำเร็จ", products);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
@@ -38,7 +39,8 @@ router.post(
       await product.save();
       return sendResponse(res, 201, "สร้างสำเร็จ", product);
     } catch (error) {
-      return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+      let status = isBadRequestError(error) ? 400 : 500;
+      return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
     }
   },
 );
@@ -61,7 +63,8 @@ router.put(
       }
       return sendResponse(res, 200, "สำเร็จ", product);
     } catch (error) {
-      return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+      let status = isBadRequestError(error) ? 400 : 500;
+      return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
     }
   },
 );
@@ -83,7 +86,8 @@ router.delete(
       }
       return sendResponse(res, 200, "สำเร็จ", product);
     } catch (error) {
-      return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+      let status = isBadRequestError(error) ? 400 : 500;
+      return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
     }
   },
 );
@@ -97,19 +101,29 @@ router.get("/:id", async function (req, res, next) {
     }
     return sendResponse(res, 200, "สำเร็จ", product);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
 router.get("/:id/orders", authorize, async function (req, res, next) {
   try {
     let { id } = req.params;
+    let product = await productSchema.findById(id);
+    if (!product) {
+      return sendResponse(res, 400, "ไม่พบสินค้า", null);
+    }
     let orders = await orderSchema
       .find({ product_id: id, isDeleted: false })
       .populate("user_id", "username");
-    return sendResponse(res, 200, "สำเร็จ", orders);
+
+    return sendResponse(res, 200, "สำเร็จ", {
+      product,
+      orders,
+    });
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
@@ -148,7 +162,8 @@ router.post("/:id/orders", authorize, async function (req, res, next) {
     await order.save();
     return sendResponse(res, 201, "สร้างสำเร็จ", order);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 

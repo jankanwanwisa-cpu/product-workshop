@@ -4,15 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { authorize, checkRole } = require("../middleware/token.middleware");
 const userSchema = require("../models/user.model");
-const { sendResponse } = require("../utils/response");
-
-const isBadRequestError = (error) => {
-  return (
-    error?.name === "ValidationError" ||
-    error?.name === "CastError" ||
-    error?.code === 11000
-  );
-};
+const { sendResponse, isBadRequestError } = require("../utils/response");
 
 const registerRoles = ["user", "merchant", "admin"];
 const getApprovalMessage = (user) => {
@@ -27,7 +19,8 @@ router.get("/users", authorize, checkRole(["admin"]), async function (req, res, 
     let users = await userSchema.find({});
     return sendResponse(res, 200, "สำเร็จ", users);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
@@ -93,7 +86,8 @@ router.post("/login", async function (req, res, next) {
       token,
     });
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 

@@ -3,7 +3,7 @@ var router = express.Router();
 
 const orderSchema = require("../models/order.model");
 const productSchema = require("../models/product.model");
-const { sendResponse } = require("../utils/response");
+const { sendResponse, isBadRequestError } = require("../utils/response");
 const { authorize } = require("../middleware/token.middleware");
 
 router.get("/", authorize, async function (req, res, next) {
@@ -11,7 +11,8 @@ router.get("/", authorize, async function (req, res, next) {
     let orders = await orderSchema.find({ isDeleted: false });
     return sendResponse(res, 200, "สำเร็จ", orders);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 router.delete("/:id", authorize, async function (req, res, next) {
@@ -27,7 +28,8 @@ router.delete("/:id", authorize, async function (req, res, next) {
     }
     return sendResponse(res, 200, "สำเร็จ", order);
   } catch (error) {
-    return sendResponse(res, 500, error.message || "ไม่ทราบสาเหตุ", null);
+    let status = isBadRequestError(error) ? 400 : 500;
+    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
   }
 });
 
