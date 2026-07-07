@@ -22,7 +22,7 @@ const getApprovalMessage = (user) => {
 };
 
 /* GET users listing. */
-router.get("/users", async function (req, res, next) {
+router.get("/users", authorize, checkRole(["admin"]), async function (req, res, next) {
   try {
     let users = await userSchema.find({});
     return sendResponse(res, 200, "สำเร็จ", users);
@@ -40,7 +40,7 @@ router.post("/register", async function (req, res, next) {
 
     let registerRole = role || "user";
     if (!registerRoles.includes(registerRole)) {
-      return sendResponse(res, 400, "role ต้องเป็น user หรือ merchant", null);
+      return sendResponse(res, 400, "role ต้องเป็น user หรือ merchant หรือ admin", null);
     }
 
     let user = new userSchema({
