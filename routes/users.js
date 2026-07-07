@@ -14,7 +14,7 @@ const isBadRequestError = (error) => {
   );
 };
 
-const registerRoles = ["user", "merchant"];
+const registerRoles = ["user", "merchant", "admin"];
 const getApprovalMessage = (user) => {
   return user.role === "merchant" && !user.is_approved
     ? "รออนุมัติ"
@@ -47,13 +47,17 @@ router.post("/register", async function (req, res, next) {
       username: username,
       password: await bcrypt.hash(password, 10),
       role: registerRole,
-      is_approved: registerRole === "user",
+      is_approved: registerRole === "user" || registerRole === "admin",
     });
     await user.save();
     return sendResponse(res, 201, getApprovalMessage(user), user);
   } catch (error) {
     let status = isBadRequestError(error) ? 400 : 500;
-    return sendResponse(res, status, error.message || "ไม่ทราบสาเหตุ", null);
+    let message = error.message || "ไม่ทราบสาเหตุ";
+    if (error?.code === 11000) {
+      message = "ชื่อผู้ใช้นี้มีอยู่แล้ว";
+    }
+    return sendResponse(res, status, message, null);
   }
 });
 
@@ -116,7 +120,7 @@ router.put(
   },
 );
 
-router.delete("/:id", async function (req, res, next) {
+router.delete("/:id",authorize,checkRole(["admin"]), async function (req, res, next) {
   try {
     let { id } = req.params;
     let user = await userSchema.findByIdAndDelete(id);
